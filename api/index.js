@@ -5,6 +5,8 @@ import path from 'path';
 
 import userRouter from './routes/user.route.js'
 import authRouter from './routes/auth.route.js'
+import cookieParser from "cookie-parser";
+
 
 const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
@@ -22,6 +24,7 @@ dotenv.config({ path: envPath });
 const app= express();
 
 app.use(express.json());
+app.use(cookieParser());
 app.listen(3000, ()=>{
     console.log("server is running on port 3000")
 });
