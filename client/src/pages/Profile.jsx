@@ -11,8 +11,11 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  deleteUserFailure
 } from "../redux/user/userSlice";
-import { useDispatch } from 'react-redux';
+import { useDispatch } from "react-redux";
 function Profile() {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -20,7 +23,7 @@ function Profile() {
   const [filePerc, setFilePerc] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
-  const [updateSuccess, setUpdateSuccess]= useState((false));
+  const [updateSuccess, setUpdateSuccess] = useState(false);
   const dispatch = useDispatch();
   // console.log(file);
   // console.log(filePerc);
@@ -56,7 +59,6 @@ function Profile() {
     );
   };
 
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -66,9 +68,9 @@ function Profile() {
     try {
       dispatch(updateUserStart());
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
@@ -82,6 +84,24 @@ function Profile() {
       setUpdateSuccess(true);
     } catch (error) {
       dispatch(updateUserFailure(error.message));
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res  =  await fetch(`/api/user/delete/${currentUser._id}`,{
+        method:'DELETE',
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data))
+
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message))
     }
   };
   return (
@@ -141,17 +161,24 @@ function Profile() {
           placeholder="password"
           className="border p-3 rounded-lg"
         />
-        <button disabled={loading} className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80">
-          {loading?'Loading':'update'}
+        <button
+          disabled={loading}
+          className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80"
+        >
+          {loading ? "Loading" : "update"}
         </button>
       </form>
       <div className="flex justify-between mt-5">
-        <span className="text-red-700 cursor-pointer">Delete account</span>
+        <span onClick={handleDelete} className="text-red-700 cursor-pointer">
+          Delete account
+        </span>
         <span className="text-red-700 cursor-pointer">Sign out</span>
       </div>
 
-      <p className="text-red-700">{error?error:''}</p>
-    <p className="text-green-700">{updateSuccess ?'User is updated successfully':''}</p>
+      <p className="text-red-700">{error ? error : ""}</p>
+      <p className="text-green-700">
+        {updateSuccess ? "User is updated successfully" : ""}
+      </p>
     </div>
   );
 }
